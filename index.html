@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador de Costo Total</title>
+</head>
+<body>
+    <h1>Simulador de Costo Total de Productos/Servicios</h1>
+    <form id="productForm">
+        <div id="productInputs">
+            <div class="product">
+                <input type="text" placeholder="Nombre del Producto/Servicio" name="productName[]">
+                <input type="number" placeholder="Precio" name="productPrice[]">
+            </div>
+        </div>
+        <button type="button" id="addProductBtn">Añadir Producto/Servicio</button>
+        <button type="button" id="calculateTotalBtn">Calcular Total</button>
+    </form>
+    <div id="totalCostDisplay">Total: $0</div>
+
+    <script src="js/Mycode.js"></script>
+</body>
+</html>
