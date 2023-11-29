@@ -1,0 +1,49 @@
+/* estilos.css */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
+body {
+  background-color: #f4f7fa;
+  font-family: "Open Sans", sans-serif;
+}
+
+h1 {
+  color: #495057;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+#productForm {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.product {
+  margin-bottom: 1rem;
+}
+
+.product input {
+  margin-top: 0.5rem;
+}
+
+button {
+  width: auto;
+  padding: 0.5rem 1.5rem;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#totalCostDisplay {
+  background-color: #e9ecef;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  color: #212529;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/*# sourceMappingURL=Estilos.css.map */
