@@ -1,4 +1,3 @@
-/* estilos.css */
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
 body {
   background-color: #f4f7fa;
@@ -12,38 +11,67 @@ h1 {
   margin-bottom: 2rem;
 }
 
+.product-form-header {
+  margin-bottom: 1rem;
+}
+.product-form-header .col-5 {
+  padding-right: 0;
+}
+
 #productForm {
   background-color: #fff;
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
 }
-
-.product {
+#productForm .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+#productForm .row:not(:last-child) {
   margin-bottom: 1rem;
 }
-
-.product input {
-  margin-top: 0.5rem;
+#productForm .product {
+  position: relative;
 }
-
-button {
-  width: auto;
-  padding: 0.5rem 1.5rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
+#productForm .product .autocomplete {
+  flex-grow: 1;
+  position: relative;
+}
+#productForm .product .autocomplete .productName {
+  width: 100%;
+  font-size: 1em;
+}
+#productForm .product .autocomplete .autocomplete-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-top: none;
+  display: none;
+}
+#productForm .product .autocomplete .autocomplete-results .autocomplete-item {
+  padding: 10px;
+  cursor: pointer;
+}
+#productForm .product .autocomplete .autocomplete-results .autocomplete-item:hover {
+  background-color: #f0f0f0;
+}
+#productForm .product .productPrice,
+#productForm .product .productQuantity {
+  width: 100%;
 }
 
 #totalCostDisplay {
-  background-color: #e9ecef;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  color: #212529;
   font-size: 1.25rem;
   font-weight: 600;
-  margin-top: 1rem;
   text-align: center;
+  margin-top: 2rem;
 }
 
 /*# sourceMappingURL=Estilos.css.map */

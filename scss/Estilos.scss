@@ -1,4 +1,3 @@
-/* estilos.css */
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 
 body {
@@ -13,37 +12,69 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.product-form-header {
+    margin-bottom: 1rem;
+    .col-5 {
+        padding-right: 0; // Ajusta el padding si es necesario
+    }
+}
+
 #productForm {
     background-color: #fff;
     padding: 2rem;
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
-}
+    
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+        &:not(:last-child) {
+            margin-bottom: 1rem;
+        }
+    }
 
-.product {
-    margin-bottom: 1rem;
-}
+    .product {
+        position: relative;
+        .autocomplete {
+            flex-grow: 1;
+            position: relative;
+            .productName {
+                width: 100%;
+                // Ajusta el tamaño de la fuente y el padding si es necesario
+                font-size: 1em;
+            }
+            .autocomplete-results {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                max-height: 300px; // Limita la altura máxima del dropdown
+                overflow-y: auto; // Habilita scroll si es necesario
+                border: 1px solid #ddd;
+                background-color: white;
+                border-top: none;
+                display: none; // Se muestra solo con resultados
 
-.product input {
-    margin-top: 0.5rem;
-}
-
-button {
-    width: auto;
-    padding: 0.5rem 1.5rem;
-    margin-right: 0.5rem;
-    margin-top: 0.5rem;
+                .autocomplete-item {
+                    padding: 10px;
+                    cursor: pointer;
+                    &:hover {
+                        background-color: #f0f0f0;
+                    }
+                }
+            }
+        }
+        .productPrice,
+        .productQuantity {
+            width: 100%;
+        }
+    }
 }
 
 #totalCostDisplay {
-    background-color: #e9ecef;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    color: #212529;
     font-size: 1.25rem;
     font-weight: 600;
-    margin-top: 1rem;
     text-align: center;
+    margin-top: 2rem;
 }
-
