@@ -1,23 +1,23 @@
 // Mycode.js
 // Este código maneja la lógica de la interfaz de usuario para añadir productos y calcular el total
 
-// Añadir un listener para cuando se cargue el documento
 document.addEventListener('DOMContentLoaded', function() {
-    // Obtener referencias a los botones y añadir event listeners
+    recuperarProductosDelStorage();
     const addProductBtn = document.getElementById('addProductBtn');
     const calculateTotalBtn = document.getElementById('calculateTotalBtn');
 
     addProductBtn.addEventListener('click', addProductInput);
     calculateTotalBtn.addEventListener('click', calculateTotal);
+    document.getElementById('productInputs').addEventListener('input', updateTotalInRealTime);
+    document.getElementById('applyDiscount').addEventListener('change', updateTotalInRealTime);
+    document.getElementById('applyTax').addEventListener('change', updateTotalInRealTime);
 });
 
-// Función para añadir un nuevo input de producto al formulario
 function addProductInput() {
     const productInputs = document.getElementById('productInputs');
     const newProductDiv = document.createElement('div');
     newProductDiv.classList.add('product', 'input-group', 'mb-3');
 
-    // Agregar inputs para nombre, precio y cantidad del producto
     newProductDiv.innerHTML = `
         <div class="autocomplete">
             <input type="text" class="form-control productName" placeholder="Nombre del Producto/Servicio" name="productName[]">
@@ -25,16 +25,87 @@ function addProductInput() {
         </div>
         <input type="number" class="form-control productPrice" placeholder="Precio" name="productPrice[]">
         <input type="number" class="form-control" placeholder="Cantidad" name="productQuantity[]" min="1" value="1">
+        <button class="btn btn-danger btn-sm" onclick="removeProductInput(this)">X</button>
     `;
 
     productInputs.appendChild(newProductDiv);
-
-    // Añadir evento de autocompletado al input de nombre de producto
     let productNameInput = newProductDiv.querySelector('.productName');
     productNameInput.addEventListener('input', function() {
         autocompleteProduct(this);
     });
 }
+
+function removeProductInput(button) {
+    button.parentElement.remove();
+    updateTotalInRealTime();
+}
+
+function updateTotalInRealTime() {
+    let totalSinImpuestos = 0;
+    const applyDiscount = document.getElementById('applyDiscount').checked;
+    const applyTax = document.getElementById('applyTax').checked;
+    const productNames = document.querySelectorAll('input[name="productName[]"]');
+    const prices = document.querySelectorAll('input[name="productPrice[]"]');
+    const quantities = document.querySelectorAll('input[name="productQuantity[]"]');
+
+    productNames.forEach((productNameInput, index) => {
+        if (productNameInput.value) {
+            let precioOriginal = Number(prices[index].value) || 0;
+            let cantidad = Number(quantities[index].value) || 1;
+            let precioConDescuento = aplicarDescuento(precioOriginal, applyDiscount);
+            let subtotal = precioConDescuento * cantidad;
+            totalSinImpuestos += subtotal;
+        }
+    });
+
+    let totalConImpuestos = calcularImpuesto(totalSinImpuestos, applyTax);
+    document.getElementById('totalCostDisplay').innerHTML = `Total: $${totalConImpuestos.toFixed(2)}`;
+}
+
+function calcularImpuesto(total, aplicarImpuesto) {
+    if (aplicarImpuesto) {
+        const impuesto = 0.15; // Impuesto del 15%
+        return total + (total * impuesto);
+    }
+    return total;
+}
+
+function aplicarDescuento(precio, aplicarDescuento) {
+    if (aplicarDescuento) {
+        const descuento = Math.random() * 0.2; // Descuento aleatorio hasta un 20%
+        return precio - (precio * descuento);
+    }
+    return precio;
+}
+
+function guardarProductosEnStorage() {
+    const productos = Array.from(document.querySelectorAll('.product')).map(productDiv => {
+        return {
+            nombre: productDiv.querySelector('.productName').value,
+            precio: productDiv.querySelector('.productPrice').value,
+            cantidad: productDiv.querySelector('.productQuantity').value
+        };
+    });
+    localStorage.setItem('productos', JSON.stringify(productos));
+}
+
+function recuperarProductosDelStorage() {
+    const productos = JSON.parse(localStorage.getItem('productos'));
+    if (productos) {
+        productos.forEach(producto => {
+            addProductInput();
+            const lastProductDiv = document.querySelector('.product:last-child');
+            lastProductDiv.querySelector('.productName').value = producto.nombre;
+            lastProductDiv.querySelector('.productPrice').value = producto.precio;
+            lastProductDiv.querySelector('.productQuantity').value = producto.cantidad;
+        });
+    }
+}
+
+// Aquí deberás implementar las funciones autocompleteProduct y selectProduct,
+// asegurándote de que interactúan correctamente con tus datos de productos.
+
+
 
 // Función para mostrar sugerencias de autocompletado
 function autocompleteProduct(inputElement) {
