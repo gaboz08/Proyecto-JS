@@ -1,207 +1,167 @@
-// Mycode.js
-// Este código maneja la lógica de la interfaz de usuario para añadir productos y calcular el total
+// Clase para gestionar productos
+class ProductManager {
+    constructor() {
+        this.products = [];
+    }
 
+    addOrUpdateProduct(name, price, quantity) {
+        const existingProductIndex = this.products.findIndex(p => p.name === name);
+
+        if (existingProductIndex > -1) {
+            this.products[existingProductIndex].quantity = Number(quantity);
+        } else {
+            if (!name || price === '' || quantity === '') {
+                alert("Por favor, completa todos los campos del producto.");
+                return false;
+            }
+            this.products.push({ name, price: Number(price), quantity: Number(quantity) });
+        }
+        return true;
+    }
+
+    // Función para eliminar un producto del arreglo de productos
+    removeProduct(name) {
+        this.products = this.products.filter(p => p.name !== name);
+    }
+
+    calculateTotal(applyDiscount, applyTax) {
+        let totalSinImpuestos = this.products.reduce((total, product) => {
+            let precioConDescuento = applyDiscount ? aplicarDescuento(product.price) : product.price;
+            return total + precioConDescuento * product.quantity;
+        }, 0);
+
+        return applyTax ? calcularImpuesto(totalSinImpuestos) : totalSinImpuestos;
+    }
+
+    generateResumen(applyDiscount) {
+        let resumen = '';
+        this.products.forEach((product, index) => {
+            let precioConDescuento = applyDiscount ? aplicarDescuento(product.price) : product.price;
+            let subtotal = precioConDescuento * product.quantity;
+            resumen += `Producto ${index + 1}: ${product.name} - Precio Original: $${product.price.toFixed(2)}, Cantidad: ${product.quantity}, Precio con Descuento: $${precioConDescuento.toFixed(2)}, Subtotal: $${subtotal.toFixed(2)}<br>`;
+        });
+        return resumen;
+    }
+}
+
+// Instancia de la clase ProductManager
+const productManager = new ProductManager();
+
+// Eventos para manejar la interacción con la interfaz
 document.addEventListener('DOMContentLoaded', function() {
-    recuperarProductosDelStorage();
     const addProductBtn = document.getElementById('addProductBtn');
-    const calculateTotalBtn = document.getElementById('calculateTotalBtn');
-
     addProductBtn.addEventListener('click', addProductInput);
+
+    const calculateTotalBtn = document.getElementById('calculateTotalBtn');
     calculateTotalBtn.addEventListener('click', calculateTotal);
-    document.getElementById('productInputs').addEventListener('input', updateTotalInRealTime);
-    document.getElementById('applyDiscount').addEventListener('change', updateTotalInRealTime);
-    document.getElementById('applyTax').addEventListener('change', updateTotalInRealTime);
 });
 
+// Función para añadir un nuevo input de producto en la interfaz
 function addProductInput() {
     const productInputs = document.getElementById('productInputs');
     const newProductDiv = document.createElement('div');
     newProductDiv.classList.add('product', 'input-group', 'mb-3');
-
     newProductDiv.innerHTML = `
         <div class="autocomplete">
-            <input type="text" class="form-control productName" placeholder="Nombre del Producto/Servicio" name="productName[]">
-            <div class="autocomplete-results"></div>
+            <input type="text" class="form-control productName" placeholder="Nombre del Producto/Servicio" oninput="autocompleteProduct(this)">
+            <div class="autocomplete-results" style="display: none;"></div>
         </div>
-        <input type="number" class="form-control productPrice" placeholder="Precio" name="productPrice[]">
-        <input type="number" class="form-control" placeholder="Cantidad" name="productQuantity[]" min="1" value="1">
+        <input type="number" class="form-control productPrice" placeholder="Precio" readonly>
+        <input type="number" class="form-control productQuantity" placeholder="Cantidad" min="1" value="1">
         <button class="btn btn-danger btn-sm" onclick="removeProductInput(this)">X</button>
     `;
-
     productInputs.appendChild(newProductDiv);
-    let productNameInput = newProductDiv.querySelector('.productName');
-    productNameInput.addEventListener('input', function() {
-        autocompleteProduct(this);
-    });
 }
 
+// Función para eliminar un input de producto de la interfaz
 function removeProductInput(button) {
+    // Obtén el nombre del producto desde el input correspondiente
+    const productName = button.parentElement.querySelector('.productName').value;
+
+    // Elimina el producto del ProductManager
+    productManager.removeProduct(productName);
+
+    // Elimina el div del producto de la interfaz
     button.parentElement.remove();
+
+    // Actualiza el total
     updateTotalInRealTime();
 }
 
+// Función para actualizar el total en tiempo real
 function updateTotalInRealTime() {
-    let totalSinImpuestos = 0;
     const applyDiscount = document.getElementById('applyDiscount').checked;
     const applyTax = document.getElementById('applyTax').checked;
-    const productNames = document.querySelectorAll('input[name="productName[]"]');
-    const prices = document.querySelectorAll('input[name="productPrice[]"]');
-    const quantities = document.querySelectorAll('input[name="productQuantity[]"]');
-
-    productNames.forEach((productNameInput, index) => {
-        if (productNameInput.value) {
-            let precioOriginal = Number(prices[index].value) || 0;
-            let cantidad = Number(quantities[index].value) || 1;
-            let precioConDescuento = aplicarDescuento(precioOriginal, applyDiscount);
-            let subtotal = precioConDescuento * cantidad;
-            totalSinImpuestos += subtotal;
-        }
-    });
-
-    let totalConImpuestos = calcularImpuesto(totalSinImpuestos, applyTax);
-    document.getElementById('totalCostDisplay').innerHTML = `Total: $${totalConImpuestos.toFixed(2)}`;
+    let total = productManager.calculateTotal(applyDiscount, applyTax);
+    document.getElementById('totalCostDisplay').innerHTML = `Total: $${total.toFixed(2)}`;
 }
 
-function calcularImpuesto(total, aplicarImpuesto) {
-    if (aplicarImpuesto) {
-        const impuesto = 0.15; // Impuesto del 15%
-        return total + (total * impuesto);
+// Función para calcular el total y mostrar el detalle del cálculo
+function calculateTotal() {
+    const applyDiscount = document.getElementById('applyDiscount').checked;
+    const applyTax = document.getElementById('applyTax').checked;
+    let total = productManager.calculateTotal(applyDiscount, applyTax);
+    let detalleCalculo = productManager.generateResumen(applyDiscount);
+    
+    if (applyTax) {
+        const impuesto = calcularImpuesto(total) - total;
+        detalleCalculo += `Impuesto: $${impuesto.toFixed(2)}<br>`;
     }
-    return total;
+
+    detalleCalculo += `Total con Impuestos: $${total.toFixed(2)}`;
+    document.getElementById('totalCostDisplay').innerHTML = `Total: $${total.toFixed(2)}`;
+    document.getElementById('detalleCalculo').innerHTML = detalleCalculo;
 }
 
-function aplicarDescuento(precio, aplicarDescuento) {
-    if (aplicarDescuento) {
-        const descuento = Math.random() * 0.2; // Descuento aleatorio hasta un 20%
-        return precio - (precio * descuento);
-    }
-    return precio;
+// Función para aplicar un descuento aleatorio al precio
+function aplicarDescuento(precio) {
+    const descuento = Math.random() * 0.2;
+    return precio - (precio * descuento);
 }
 
-function guardarProductosEnStorage() {
-    const productos = Array.from(document.querySelectorAll('.product')).map(productDiv => {
-        return {
-            nombre: productDiv.querySelector('.productName').value,
-            precio: productDiv.querySelector('.productPrice').value,
-            cantidad: productDiv.querySelector('.productQuantity').value
-        };
-    });
-    localStorage.setItem('productos', JSON.stringify(productos));
+// Función para calcular el impuesto sobre el total
+function calcularImpuesto(total) {
+    const impuesto = 0.15; // Tasa de impuesto del 15%
+    return total + (total * impuesto);
 }
 
-function recuperarProductosDelStorage() {
-    const productos = JSON.parse(localStorage.getItem('productos'));
-    if (productos) {
-        productos.forEach(producto => {
-            addProductInput();
-            const lastProductDiv = document.querySelector('.product:last-child');
-            lastProductDiv.querySelector('.productName').value = producto.nombre;
-            lastProductDiv.querySelector('.productPrice').value = producto.precio;
-            lastProductDiv.querySelector('.productQuantity').value = producto.cantidad;
-        });
-    }
-}
-
-// Aquí deberás implementar las funciones autocompleteProduct y selectProduct,
-// asegurándote de que interactúan correctamente con tus datos de productos.
-
-
-
-// Función para mostrar sugerencias de autocompletado
+// Función para el autocompletado de nombres de productos
 function autocompleteProduct(inputElement) {
     let autocompleteResults = inputElement.nextElementSibling;
     autocompleteResults.innerHTML = '';
+    autocompleteResults.style.display = 'none';
 
-    // Filtrar productos basados en la entrada del usuario
     let filteredProducts = productos.filter(p => p.nombre.toLowerCase().includes(inputElement.value.toLowerCase()));
 
-    // Mostrar los resultados filtrados como opciones de autocompletado
+    if (filteredProducts.length > 0) {
+        autocompleteResults.style.display = 'block';
+    }
+
     filteredProducts.forEach(product => {
         let div = document.createElement('div');
         div.classList.add('autocomplete-item');
         div.textContent = product.nombre;
         div.onclick = function() {
-            selectProduct(inputElement, product, autocompleteResults);
+            selectProduct(inputElement, product, div.parentElement);
         };
         autocompleteResults.appendChild(div);
     });
-
-    // Hacer el campo de precio editable si no hay coincidencias
-    if (filteredProducts.length === 0) {
-        inputElement.parentElement.nextElementSibling.removeAttribute('readonly');
-    } else {
-        inputElement.parentElement.nextElementSibling.setAttribute('readonly', true);
-    }
 }
 
-// Función para manejar la selección de un producto desde las sugerencias
+// Función para seleccionar un producto del autocompletado
 function selectProduct(inputElement, product, autocompleteResults) {
-    // Establecer el valor del input del nombre y el precio
     inputElement.value = product.nombre;
-    let priceInput = inputElement.parentElement.nextElementSibling;
+    let priceInput = inputElement.parentElement.parentElement.querySelector('.productPrice');
+    let quantityInput = inputElement.parentElement.parentElement.querySelector('.productQuantity');
     priceInput.value = product.precio;
+    quantityInput.value = 1; // Establece la cantidad inicial a 1
+    quantityInput.addEventListener('change', () => {
+        // Actualizar el producto en ProductManager cuando cambia la cantidad
+        productManager.addOrUpdateProduct(product.nombre, product.precio, quantityInput.value);
+        updateTotalInRealTime();
+    });
+    productManager.addOrUpdateProduct(product.nombre, product.precio, 1);
     autocompleteResults.innerHTML = '';
-}
-
-// Función para aplicar un descuento aleatorio
-function aplicarDescuento(precio, aplicarDescuento) {
-    if (aplicarDescuento) {
-        const descuento = Math.random() * 0.2; // Descuento aleatorio hasta un 20%
-        return precio - (precio * descuento);
-    }
-    return precio;
-}
-
-// Función para calcular el impuesto
-function calcularImpuesto(total, aplicarImpuesto) {
-    if (aplicarImpuesto) {
-        const impuesto = 0.15; // Impuesto del 15%
-        return total + (total * impuesto);
-    }
-    return total;
-}
-
-// Función para calcular el total de los productos añadidos
-function calculateTotal() {
-    let totalSinImpuestos = 0;
-    const applyDiscount = document.getElementById('applyDiscount').checked;
-    const applyTax = document.getElementById('applyTax').checked;
-    const productNames = document.querySelectorAll('input[name="productName[]"]');
-    const prices = document.querySelectorAll('input[name="productPrice[]"]');
-    const quantities = document.querySelectorAll('input[name="productQuantity[]"]');
-
-    productNames.forEach((productNameInput, index) => {
-        if (productNameInput.value) {
-            let precioOriginal = Number(prices[index].value) || 0;
-            let cantidad = Number(quantities[index].value) || 1;
-            let precioConDescuento = aplicarDescuento(precioOriginal, applyDiscount);
-            let subtotal = precioConDescuento * cantidad;
-            totalSinImpuestos += subtotal;
-        }
-    });
-
-    let totalConImpuestos = calcularImpuesto(totalSinImpuestos, applyTax);
-    mostrarDetalleCalculo(productNames, prices, quantities, totalSinImpuestos, totalConImpuestos, applyTax);
-}
-
-// Función para mostrar los detalles del cálculo en la interfaz de usuario
-function mostrarDetalleCalculo(productNames, prices, quantities, totalSinImpuestos, totalConImpuestos, applyTax) {
-    let detalleCalculo = '';
-    productNames.forEach((productNameInput, index) => {
-        if (productNameInput.value) {
-            let precioOriginal = Number(prices[index].value) || 0;
-            let cantidad = Number(quantities[index].value) || 1;
-            let precioConDescuento = aplicarDescuento(precioOriginal, document.getElementById('applyDiscount').checked);
-            detalleCalculo += `Producto ${index + 1}: ${productNameInput.value} - Precio Original: $${precioOriginal.toFixed(2)}, Cantidad: ${cantidad}, Precio con Descuento: $${precioConDescuento.toFixed(2)}, Subtotal: $${(precioConDescuento * cantidad).toFixed(2)}<br>`;
-        }
-    });
-
-    detalleCalculo += `Total sin Impuestos: $${totalSinImpuestos.toFixed(2)}<br>`;
-    if (applyTax) {
-        detalleCalculo += `Impuesto: $${(totalConImpuestos - totalSinImpuestos).toFixed(2)}<br>`;
-    }
-    detalleCalculo += `Total con Impuestos: $${totalConImpuestos.toFixed(2)}`;
-
-    document.getElementById('totalCostDisplay').innerHTML = `Total: $${totalConImpuestos.toFixed(2)}`;
-    document.getElementById('detalleCalculo').innerHTML = detalleCalculo;
+    autocompleteResults.style.display = 'none';
+    updateTotalInRealTime();
 }
